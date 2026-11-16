@@ -8,5 +8,5 @@ export interface Intent {
 
 export interface SendIntentPlugin {
   checkSendIntentReceived(): Promise<Intent>;
-  finish(): void;
+  finish(): Promise<void>;
 }
