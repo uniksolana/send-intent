@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.UUID;
 @CapacitorPlugin()
 public class SendIntent extends Plugin {
     private static final int BUFFER_SIZE = 64 * 1024;
+    private final List<File> pendingSharedFiles = Collections.synchronizedList(new ArrayList<>());
 
     @PluginMethod
     public void checkSendIntentReceived(PluginCall call) {
@@ -91,6 +93,7 @@ public class SendIntent extends Plugin {
                 index++;
             }
             result.put("additionalItems", additionalItems);
+            pendingSharedFiles.addAll(createdFiles);
             call.resolve(result);
         } catch (Exception error) {
             for (File file : createdFiles) {
@@ -105,8 +108,20 @@ public class SendIntent extends Plugin {
 
     @PluginMethod
     public void finish(PluginCall call) {
+        cleanupPendingSharedFiles();
         finishShareActivityIfApplicable();
         call.resolve();
+    }
+
+    private void cleanupPendingSharedFiles() {
+        synchronized (pendingSharedFiles) {
+            for (File file : pendingSharedFiles) {
+                if (file.exists() && !file.delete()) {
+                    android.util.Log.w("SendIntent", "Could not remove consumed shared file: " + file.getName());
+                }
+            }
+            pendingSharedFiles.clear();
+        }
     }
 
     private void finishShareActivityIfApplicable() {
