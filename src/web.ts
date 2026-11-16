@@ -10,7 +10,7 @@ export class SendIntentWeb extends WebPlugin implements SendIntentPlugin {
         return {title: ''};
     }
 
-    finish(): void {
+    async finish(): Promise<void> {
     }
 
 }
