@@ -5,7 +5,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   publish:
@@ -16,10 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Enable npm trusted publishing
-        run: |
-          npm install --global npm@11.5.1
-          test "$(npm --version)" = "11.5.1"
+          registry-url: 'https://registry.npmjs.org'
       - name: Install dependencies
         run: npm ci
       - name: Build package
@@ -30,3 +26,5 @@ jobs:
           test -f dist/plugin.cjs.js
       - name: Publish beta with provenance
         run: npm publish --access public --tag beta --provenance --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
