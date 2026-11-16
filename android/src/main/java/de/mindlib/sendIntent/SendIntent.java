@@ -24,9 +24,6 @@ import java.util.UUID;
 
 @CapacitorPlugin()
 public class SendIntent extends Plugin {
-    private static final long MAX_FILE_BYTES = 30L * 1024L * 1024L;
-    private static final long MAX_BATCH_BYTES = 50L * 1024L * 1024L;
-    private static final int MAX_BATCH_FILES = 10;
     private static final int BUFFER_SIZE = 64 * 1024;
 
     @PluginMethod
@@ -46,24 +43,20 @@ public class SendIntent extends Plugin {
             String sharedText = Intent.ACTION_SEND.equals(action)
                 ? intent.getStringExtra(Intent.EXTRA_TEXT) : null;
             List<Uri> uris = collectSharedUris(intent, action);
-            if (uris.size() > MAX_BATCH_FILES) {
-                throw new IOException("Shared batch exceeds the maximum of " + MAX_BATCH_FILES + " files");
-            }
-
             Map<String, Uri> uniqueUris = new LinkedHashMap<>();
             for (Uri uri : uris) {
                 if (uri != null) uniqueUris.put(uri.toString(), uri);
             }
-            if (uniqueUris.size() > MAX_BATCH_FILES) {
+            if (uniqueUris.size() > ShareFileLimits.MAX_BATCH_FILES) {
                 throw new IOException("Shared batch exceeds the maximum of " + MAX_BATCH_FILES + " files");
             }
 
             long knownTotal = 0;
             for (Uri uri : uniqueUris.values()) {
                 long size = queryFileSize(uri);
-                if (size > MAX_FILE_BYTES) throw new IOException("A shared file exceeds the 30 MiB limit");
+                if (size > ShareFileLimits.MAX_FILE_BYTES) throw new IOException("A shared file exceeds the 30 MiB limit");
                 if (size >= 0) {
-                    if (knownTotal > MAX_BATCH_BYTES - size) {
+                    if (!ShareFileLimits.isWithinLimit(knownTotal, size, ShareFileLimits.MAX_BATCH_BYTES)) {
                         throw new IOException("Shared batch exceeds the 50 MiB limit");
                     }
                     knownTotal += size;
@@ -79,10 +72,10 @@ public class SendIntent extends Plugin {
             int index = 0;
             long copiedTotal = 0;
             for (Uri uri : uniqueUris.values()) {
-                File copied = copyUriToPrivateStorage(uri, MAX_BATCH_BYTES - copiedTotal);
+                File copied = copyUriToPrivateStorage(uri, ShareFileLimits.MAX_BATCH_BYTES - copiedTotal);
                 createdFiles.add(copied);
                 copiedTotal += copied.length();
-                if (copiedTotal > MAX_BATCH_BYTES) throw new IOException("Shared batch exceeds the 50 MiB limit");
+                if (copiedTotal > ShareFileLimits.MAX_BATCH_BYTES) throw new IOException("Shared batch exceeds the 50 MiB limit");
 
                 JSObject item = new JSObject();
                 item.put("title", readFileName(uri));
@@ -190,7 +183,7 @@ public class SendIntent extends Plugin {
     }
 
     private File copyUriToPrivateStorage(Uri uri, long remainingBatchBytes) throws IOException {
-        long limit = Math.min(MAX_FILE_BYTES, remainingBatchBytes);
+        long limit = Math.min(ShareFileLimits.MAX_FILE_BYTES, remainingBatchBytes);
         if (limit <= 0) throw new IOException("Shared batch exceeds the 50 MiB limit");
 
         File directory = getContext().getFilesDir();
@@ -206,8 +199,8 @@ public class SendIntent extends Plugin {
                 int count;
                 while ((count = input.read(buffer)) != -1) {
                     if (count == 0) continue;
-                    if (copied > limit - count) {
-                        throw new IOException(copied + count > MAX_FILE_BYTES
+                    if (!ShareFileLimits.isWithinLimit(copied, count, limit)) {
+                        throw new IOException(copied + count > ShareFileLimits.MAX_FILE_BYTES
                             ? "A shared file exceeds the 30 MiB limit"
                             : "Shared batch exceeds the 50 MiB limit");
                     }
