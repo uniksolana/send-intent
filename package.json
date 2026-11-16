@@ -1,10 +1,10 @@
 {
-  "name": "@mindlib-capacitor/send-intent",
-  "version": "8.0.6",
+  "name": "@uniksolana/capacitor-send-intent",
+  "version": "8.0.6-agathia.1",
   "publishConfig": {
     "access": "public"
   },
-  "description": "SendIntent",
+  "description": "Hardened Capacitor Android share intent plugin for Agathia",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -22,10 +22,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mindlib-capacitor/send-intent.git"
+    "url": "git+https://github.com/uniksolana/send-intent.git"
   },
   "bugs": {
-    "url": "https://github.com/mindlib-capacitor/send-intent/issues"
+    "url": "https://github.com/uniksolana/send-intent/issues"
   },
   "keywords": [
     "capacitor",
@@ -83,5 +83,6 @@
   },
   "dependencies": {
     "@capacitor/cli": "^8.0.0"
-  }
+  },
+  "homepage": "https://github.com/uniksolana/send-intent#readme"
 }
