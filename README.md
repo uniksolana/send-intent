@@ -1,17 +1,17 @@
 # Send-Intent
 
-This is a Capacitor plugin meant to be used in Ionic applications for checking if your App was targeted as a share goal. It supports both Android and iOS and is able to handle a single file or multiple files of any type.
+Agathia-maintained Capacitor plugin for securely receiving Android share intents, with bounded file ingestion and explicit activity completion. It retains the upstream iOS implementation. It supports both Android and iOS and is able to handle a single file or multiple files of any type.
 
 Check out my app [mindlib - your personal mind library](https://play.google.com/store/apps/details?id=de.mindlib) to see it in action.
 
 ## Migration to Capacitor 8 (new package name/scope)
 
-The plugin has been renamed. If you are migrating from an older version, you need to update your imports:
+The Agathia-maintained package uses its own npm scope. Update imports when migrating from the upstream package:
 
 **JavaScript/TypeScript:**
 ```diff
 - import { SendIntent } from "send-intent";
-+ import { SendIntent } from "@mindlib-capacitor/send-intent";
++ import { SendIntent } from "@uniksolana/capacitor-send-intent";
 ```
 
 **iOS (AppDelegate.swift):**
@@ -29,7 +29,7 @@ For projects below Capacitor 3 please use "send-intent": "1.1.7"!
 ## Installation
 
 ```
-npm install @mindlib-capacitor/send-intent
+npm install @uniksolana/capacitor-send-intent
 npx cap sync
 ```
 
@@ -42,7 +42,7 @@ The "url"-property of the SendIntent result is also used for web urls, e.g. when
 either through checking the "type"-property or by error handling!
 
 ```js
-import { SendIntent } from "@mindlib-capacitor/send-intent";
+import { SendIntent } from "@uniksolana/capacitor-send-intent";
 
 SendIntent.checkSendIntentReceived().then((result: any) => {
     if (result) {
