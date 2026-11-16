@@ -1,0 +1,31 @@
+name: Publish Agathia beta to npm
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build package
+        run: npm run build
+      - name: Verify release identity
+        run: |
+          node -e "const p=require('./package.json'); if(p.name!=='@uniksolana/capacitor-send-intent'||p.version!=='8.0.6-agathia.1') process.exit(1);"
+          test -f dist/plugin.cjs.js
+      - name: Publish beta with provenance
+        run: npm publish --access public --tag beta --provenance --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
