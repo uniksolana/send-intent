@@ -50,7 +50,7 @@ public class SendIntent extends Plugin {
                 if (uri != null) uniqueUris.put(uri.toString(), uri);
             }
             if (uniqueUris.size() > ShareFileLimits.MAX_BATCH_FILES) {
-                throw new IOException("Shared batch exceeds the maximum of " + MAX_BATCH_FILES + " files");
+                throw new IOException("Shared batch exceeds the maximum of " + ShareFileLimits.MAX_BATCH_FILES + " files");
             }
 
             long knownTotal = 0;
